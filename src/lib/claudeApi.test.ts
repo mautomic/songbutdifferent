@@ -18,13 +18,13 @@ describe('generateGenrePrompt', () => {
   it('calls backend proxy with correct headers', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ content: [{ text: 'Jazz prompt here' }] }),
+      json: async () => ({ choices: [{ message: { content: 'Jazz prompt here' } }] }),
     } as Response)
 
     await generateGenrePrompt(mockAnalysis, 'Jazz', 'test-api-key')
 
     expect(fetch).toHaveBeenCalledWith(
-      'http://localhost:3001/api/claude',
+      'http://localhost:3001/api/openai',
       expect.objectContaining({
         method: 'POST',
         headers: expect.objectContaining({
@@ -34,10 +34,10 @@ describe('generateGenrePrompt', () => {
     )
   })
 
-  it('returns the text from Claude response', async () => {
+  it('returns the text from OpenAI response', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ content: [{ text: 'Jazz prompt here' }] }),
+      json: async () => ({ choices: [{ message: { content: 'Jazz prompt here' } }] }),
     } as Response)
 
     const result = await generateGenrePrompt(mockAnalysis, 'Jazz', 'test-api-key')
@@ -51,6 +51,6 @@ describe('generateGenrePrompt', () => {
       json: async () => ({ error: { message: 'Unauthorized' } }),
     } as Response)
 
-    await expect(generateGenrePrompt(mockAnalysis, 'Jazz', 'key')).rejects.toThrow('Claude API error: 401')
+    await expect(generateGenrePrompt(mockAnalysis, 'Jazz', 'key')).rejects.toThrow('OpenAI API error: 401')
   })
 })

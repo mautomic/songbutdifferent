@@ -8,7 +8,7 @@ import { generateMusic, blobToObjectUrl } from './lib/elevenLabsApi'
 
 type Phase = 'idle' | 'analyzing' | 'generating-prompt' | 'generating-music' | 'done' | 'error'
 
-interface Keys { claudeKey: string; elevenLabsKey: string }
+interface Keys { openaiKey: string; elevenLabsKey: string }
 
 const STORAGE_KEY = 'sbd-api-keys'
 
@@ -17,12 +17,12 @@ function loadKeys(): Keys {
     const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}')
     // Use stored keys if available, otherwise fall back to env vars
     return {
-      claudeKey: stored.claudeKey || (import.meta.env.VITE_CLAUDE_API_KEY ?? ''),
+      openaiKey: stored.openaiKey || (import.meta.env.VITE_OPENAI_API_KEY ?? ''),
       elevenLabsKey: stored.elevenLabsKey || (import.meta.env.VITE_ELEVENLABS_API_KEY ?? ''),
     }
   } catch {
     return {
-      claudeKey: import.meta.env.VITE_CLAUDE_API_KEY ?? '',
+      openaiKey: import.meta.env.VITE_OPENAI_API_KEY ?? '',
       elevenLabsKey: import.meta.env.VITE_ELEVENLABS_API_KEY ?? '',
     }
   }
@@ -49,8 +49,8 @@ export default function App() {
 
   async function handleTransform() {
     if (!audioFile || !genre) return
-    if (!keys.claudeKey || !keys.elevenLabsKey) {
-      setError('API keys not configured. Set VITE_CLAUDE_API_KEY and VITE_ELEVENLABS_API_KEY in your .env file.')
+    if (!keys.openaiKey || !keys.elevenLabsKey) {
+      setError('API keys not configured. Set VITE_OPENAI_API_KEY and VITE_ELEVENLABS_API_KEY in your .env file.')
       return
     }
 
@@ -63,9 +63,9 @@ export default function App() {
       const result = await analyzeAudioBuffer(audioBuffer)
       setAnalysis(result)
 
-      // Step 2: Generate prompt via Claude
+      // Step 2: Generate prompt via OpenAI
       setPhase('generating-prompt')
-      const rawResponse = await generateGenrePrompt(result, genre, keys.claudeKey)
+      const rawResponse = await generateGenrePrompt(result, genre, keys.openaiKey)
       const { detection: det, elevenLabsPrompt: prompt } = parseClaudeResponse(rawResponse)
       setDetection(det)
       setElevenLabsPrompt(prompt)
@@ -84,7 +84,7 @@ export default function App() {
   const PHASE_MESSAGES: Record<Phase, string> = {
     idle: '',
     analyzing: 'Analyzing your song with great confidence...',
-    'generating-prompt': 'Consulting Claude about your questionable taste...',
+    'generating-prompt': 'Consulting OpenAI about your questionable taste...',
     'generating-music': 'ElevenLabs is cooking something up...',
     done: '',
     error: '',

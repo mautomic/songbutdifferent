@@ -10,28 +10,26 @@ const PORT = 3001
 app.use(cors())
 app.use(express.json())
 
-// Claude API proxy
-app.post('/api/claude', async (req, res) => {
+// OpenAI API proxy
+app.post('/api/openai', async (req, res) => {
   try {
-    const { messages, system, model, max_tokens, apiKey } = req.body
+    const { messages, model, max_tokens, apiKey } = req.body
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         model,
         max_tokens,
-        system,
         messages,
       }),
     })
 
     if (!response.ok) {
-      return res.status(response.status).json({ error: 'Claude API error' })
+      return res.status(response.status).json({ error: 'OpenAI API error' })
     }
 
     const data = await response.json()

@@ -25,29 +25,31 @@ export async function generateGenrePrompt(
   genre: string,
   apiKey: string
 ): Promise<string> {
-  const response = await fetch('http://localhost:3001/api/claude', {
+  const response = await fetch('http://localhost:3001/api/openai', {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'claude-opus-4-6',
+      model: 'gpt-4o-mini',
       max_tokens: 512,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: buildUserMessage(analysis, genre) }],
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: buildUserMessage(analysis, genre) },
+      ],
       apiKey,
     }),
   })
 
   if (!response.ok) {
-    throw new Error(`Claude API error: ${response.status}`)
+    throw new Error(`OpenAI API error: ${response.status}`)
   }
 
   const data = await response.json()
-  return data.content[0].text as string
+  return data.choices[0].message.content as string
 }
 
-// Parse Claude's two-part response into detection blurb + ElevenLabs prompt
+// Parse OpenAI's two-part response into detection blurb + ElevenLabs prompt
 export function parseClaudeResponse(raw: string): { detection: string; elevenLabsPrompt: string } {
   const lines = raw.split('\n').filter(l => l.trim())
   const promptIdx = lines.findIndex(l => l.startsWith('PROMPT:'))
