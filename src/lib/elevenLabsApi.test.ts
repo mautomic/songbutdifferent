@@ -44,4 +44,35 @@ describe('generateMusic', () => {
 
     await expect(generateMusic('prompt', 'key', 240)).rejects.toThrow('ElevenLabs API error: 401')
   })
+
+  it('caps duration at 30 seconds max (ElevenLabs API limit)', async () => {
+    const fakeBlob = new Blob(['audio'], { type: 'audio/mpeg' })
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      blob: async () => fakeBlob,
+    } as Response)
+
+    // Try with a very long song (268s) - would calculate to 67s without cap
+    await generateMusic('prompt', 'key', 268)
+
+    const callArgs = vi.mocked(fetch).mock.calls[0]
+    const body = JSON.parse(callArgs[1]?.body as string)
+    // Should be capped at 30, not 67 (268 / 4)
+    expect(body.duration_seconds).toBe(30)
+  })
+
+  it('uses minimum duration of 10 seconds for short songs', async () => {
+    const fakeBlob = new Blob(['audio'], { type: 'audio/mpeg' })
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      blob: async () => fakeBlob,
+    } as Response)
+
+    // Short song (20s) would calculate to 5s - should use minimum of 10s
+    await generateMusic('prompt', 'key', 20)
+
+    const callArgs = vi.mocked(fetch).mock.calls[0]
+    const body = JSON.parse(callArgs[1]?.body as string)
+    expect(body.duration_seconds).toBe(10)
+  })
 })

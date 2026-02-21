@@ -1,4 +1,9 @@
 export async function generateMusic(prompt: string, apiKey: string, durationSeconds: number): Promise<Blob> {
+  // ElevenLabs sound generation: duration must be 0.5-30 seconds
+  // Calculate 1/4 of original, but cap at 30 second max
+  const targetDuration = Math.round(durationSeconds / 4)
+  const cappedDuration = Math.min(Math.max(targetDuration, 10), 30)
+
   const response = await fetch('http://localhost:3001/api/elevenlabs', {
     method: 'POST',
     headers: {
@@ -6,7 +11,7 @@ export async function generateMusic(prompt: string, apiKey: string, durationSeco
     },
     body: JSON.stringify({
       text: prompt,
-      duration_seconds: Math.max(Math.round(durationSeconds / 4), 10),
+      duration_seconds: cappedDuration,
       prompt_influence: 0.5,
       apiKey,
     }),
