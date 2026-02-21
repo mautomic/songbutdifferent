@@ -15,7 +15,7 @@ describe('generateGenrePrompt', () => {
     global.fetch = vi.fn()
   })
 
-  it('calls Claude API with correct headers', async () => {
+  it('calls backend proxy with correct headers', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ content: [{ text: 'Jazz prompt here' }] }),
@@ -24,12 +24,11 @@ describe('generateGenrePrompt', () => {
     await generateGenrePrompt(mockAnalysis, 'Jazz', 'test-api-key')
 
     expect(fetch).toHaveBeenCalledWith(
-      'https://api.anthropic.com/v1/messages',
+      'http://localhost:3001/api/claude',
       expect.objectContaining({
         method: 'POST',
         headers: expect.objectContaining({
-          'x-api-key': 'test-api-key',
-          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json',
         }),
       })
     )

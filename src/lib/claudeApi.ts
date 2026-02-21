@@ -25,11 +25,9 @@ export async function generateGenrePrompt(
   genre: string,
   apiKey: string
 ): Promise<string> {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const response = await fetch('http://localhost:3001/api/claude', {
     method: 'POST',
     headers: {
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
       'content-type': 'application/json',
     },
     body: JSON.stringify({
@@ -37,6 +35,7 @@ export async function generateGenrePrompt(
       max_tokens: 512,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: buildUserMessage(analysis, genre) }],
+      apiKey,
     }),
   })
 

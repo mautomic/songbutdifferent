@@ -6,7 +6,7 @@ describe('generateMusic', () => {
     global.fetch = vi.fn()
   })
 
-  it('calls ElevenLabs with correct headers and body', async () => {
+  it('calls backend proxy with correct headers and body', async () => {
     const fakeBlob = new Blob(['audio'], { type: 'audio/mpeg' })
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
@@ -16,10 +16,10 @@ describe('generateMusic', () => {
     await generateMusic('cool jazz prompt', 'test-key')
 
     expect(fetch).toHaveBeenCalledWith(
-      'https://api.elevenlabs.io/v1/sound-generation',
+      'http://localhost:3001/api/elevenlabs',
       expect.objectContaining({
         method: 'POST',
-        headers: expect.objectContaining({ 'xi-api-key': 'test-key' }),
+        headers: expect.objectContaining({ 'content-type': 'application/json' }),
         body: expect.stringContaining('cool jazz prompt'),
       })
     )
