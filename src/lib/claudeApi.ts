@@ -3,8 +3,9 @@ import type { AudioAnalysis } from './audioAnalysis'
 const SYSTEM_PROMPT = `You are a sardonic music analyst and creative prompt engineer.
 You describe songs with deadpan confidence, even when your analysis is obviously absurd.
 You write prompts for ElevenLabs music generation that capture a song's essence reimagined in a new genre.
-When original lyrics are provided, include them in the ElevenLabs prompt so vocals can sing them in the new genre style.
-Keep prompts under 300 characters: specific, evocative, instrument-forward, and include the vocal content when lyrics are available.`
+When original lyrics are provided, describe the vocal themes and emotional content from the lyrics in your prompt (don't embed the lyrics themselves).
+For vocals: describe singing style, emotional tone, and what the vocals are about based on the lyrics.
+Keep prompts under 300 characters: specific, evocative, instrument-forward, with vocal style when available.`
 
 // Extract a proportional amount of lyrics for instrumental context (~25-30% for 1/4 length)
 function getProportionalLyricsExcerpt(lyrics: string): string {
@@ -59,16 +60,16 @@ First, write one sentence describing what you "detected" in the original song (b
 Then on a new line starting with "PROMPT:", write an ElevenLabs music generation prompt that captures this song's essence reimagined as ${genre}. Be specific about tempo, instruments, mood, atmosphere, AND vocal content/singing style.`
 
   if (lyrics && lyrics.trim()) {
-    const contextExcerpt = getProportionalLyricsExcerpt(lyrics)
     const vocalExcerpt = getVocalLyricsExcerpt(lyrics)
 
     message += `
 
-Original lyrics context for instrumental style (excerpt - proportional to ${Math.round(durationSeconds / 4)}s generated song):
-${contextExcerpt}
+IMPORTANT - Read this lyrical content to inform the ElevenLabs prompt:
+Analyze the themes, emotions, and storytelling in these lyrics and describe them in your prompt (don't embed the lyrics themselves):
 
-Lyrics for vocals (use these in the ElevenLabs prompt so they get sung):
-${vocalExcerpt}`
+${vocalExcerpt}
+
+Create the ElevenLabs prompt to capture these lyrical themes through vocal style, emotion, and what the vocals are about.`
   }
 
   return message
