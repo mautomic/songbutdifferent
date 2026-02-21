@@ -58,7 +58,13 @@ app.post('/api/elevenlabs', async (req, res) => {
     })
 
     if (!response.ok) {
-      return res.status(response.status).json({ error: 'ElevenLabs API error' })
+      const errorText = await response.text()
+      console.error(`ElevenLabs error ${response.status}:`, errorText)
+      return res.status(response.status).json({
+        error: 'ElevenLabs API error',
+        details: errorText,
+        status: response.status
+      })
     }
 
     const blob = await response.arrayBuffer()
