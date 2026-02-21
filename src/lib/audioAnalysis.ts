@@ -35,7 +35,7 @@ export function averageChroma(frames: number[][]): number[] {
 }
 
 export function detectKey(avgChroma: number[]): { note: string; scale: 'major' | 'minor' } {
-  let best = { note: 'C', scale: 'major' as const, corr: -Infinity }
+  let best: { note: string; scale: 'major' | 'minor'; corr: number } = { note: 'C', scale: 'major', corr: -Infinity }
   for (let i = 0; i < 12; i++) {
     const rotated = [...avgChroma.slice(i), ...avgChroma.slice(0, i)]
     const majorCorr = pearsonCorrelation(rotated, MAJOR_PROFILE)
