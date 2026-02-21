@@ -1,4 +1,4 @@
-export async function generateMusic(prompt: string, apiKey: string): Promise<Blob> {
+export async function generateMusic(prompt: string, apiKey: string, durationSeconds: number): Promise<Blob> {
   const response = await fetch('http://localhost:3001/api/elevenlabs', {
     method: 'POST',
     headers: {
@@ -6,7 +6,7 @@ export async function generateMusic(prompt: string, apiKey: string): Promise<Blo
     },
     body: JSON.stringify({
       text: prompt,
-      duration_seconds: 22,
+      duration_seconds: Math.max(Math.round(durationSeconds / 4), 10),
       prompt_influence: 0.5,
       apiKey,
     }),

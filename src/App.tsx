@@ -72,7 +72,7 @@ export default function App() {
 
       // Step 3: Generate music via ElevenLabs
       setPhase('generating-music')
-      const blob = await generateMusic(prompt, keys.elevenLabsKey)
+      const blob = await generateMusic(prompt, keys.elevenLabsKey, result.durationSeconds)
       setAudioUrl(blobToObjectUrl(blob))
       setPhase('done')
     } catch (e) {

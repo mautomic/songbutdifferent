@@ -13,7 +13,7 @@ describe('generateMusic', () => {
       blob: async () => fakeBlob,
     } as Response)
 
-    await generateMusic('cool jazz prompt', 'test-key')
+    await generateMusic('cool jazz prompt', 'test-key', 240)
 
     expect(fetch).toHaveBeenCalledWith(
       'http://localhost:3001/api/elevenlabs',
@@ -32,7 +32,7 @@ describe('generateMusic', () => {
       blob: async () => fakeBlob,
     } as Response)
 
-    const result = await generateMusic('prompt', 'key')
+    const result = await generateMusic('prompt', 'key', 240)
     expect(result).toBeInstanceOf(Blob)
   })
 
@@ -42,6 +42,6 @@ describe('generateMusic', () => {
       status: 401,
     } as Response)
 
-    await expect(generateMusic('prompt', 'key')).rejects.toThrow('ElevenLabs API error: 401')
+    await expect(generateMusic('prompt', 'key', 240)).rejects.toThrow('ElevenLabs API error: 401')
   })
 })
