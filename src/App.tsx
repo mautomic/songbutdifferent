@@ -15,8 +15,18 @@ const STORAGE_KEY = 'sbd-api-keys'
 
 function loadKeys(): Keys {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}')
-  } catch { return { claudeKey: '', elevenLabsKey: '' } }
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}')
+    // Use stored keys if available, otherwise fall back to env vars
+    return {
+      claudeKey: stored.claudeKey || (import.meta.env.VITE_CLAUDE_API_KEY ?? ''),
+      elevenLabsKey: stored.elevenLabsKey || (import.meta.env.VITE_ELEVENLABS_API_KEY ?? ''),
+    }
+  } catch {
+    return {
+      claudeKey: import.meta.env.VITE_CLAUDE_API_KEY ?? '',
+      elevenLabsKey: import.meta.env.VITE_ELEVENLABS_API_KEY ?? '',
+    }
+  }
 }
 
 export default function App() {
