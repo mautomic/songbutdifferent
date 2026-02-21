@@ -5,7 +5,8 @@ You describe songs with deadpan confidence, even when your analysis is obviously
 You write prompts for ElevenLabs music generation that capture a song's essence reimagined in a new genre.
 When original lyrics are provided, include key lyrics in the ElevenLabs prompt so vocals can sing them.
 CRITICAL: Keep the ElevenLabs prompt to EXACTLY 450 characters or less. Condense and prioritize.
-Include essential lyrics, tempo, instruments, mood, and vocal style within the 450 character limit.`
+Include: essential lyrics, tempo, instruments, mood, vocal style, AND "vocals start within 10 seconds."
+The 10-second vocal start timing is important for short ~30 second songs.`
 
 
 function buildUserMessage(analysis: AudioAnalysis, genre: string, lyrics?: string): string {
@@ -21,8 +22,8 @@ Target genre: ${genre}
 
 First, write one sentence describing what you "detected" in the original song (be confidently absurd).
 Then on a new line starting with "PROMPT:", write an ElevenLabs music generation prompt (MAXIMUM 450 CHARACTERS).
-Include: tempo, instruments, mood, AND key lyrics for vocals to sing in the new ${genre} style.
-Every character counts - be concise and smart about what lyrics you include.`
+Include: tempo, instruments, mood, key lyrics for vocals in the new ${genre} style, AND "vocals start within 10 seconds."
+Generated song is ~30s, so vocals must enter early. Every character counts - be smart about selections.`
 
   if (lyrics && lyrics.trim()) {
     // Only pass first ~500 chars of lyrics to help OpenAI select key lines
@@ -33,7 +34,7 @@ KEY LYRICS (select important lines for your 450-char prompt):
 ${lyricsSummary}
 ${lyrics.trim().length > 500 ? '\n[... more lyrics ...]' : ''}
 
-Pick the most memorable/essential lyrics that fit in 450 characters with other prompt elements.`
+Pick memorable/essential lyrics that fit with tempo, mood, vocal style, AND the "vocals start within 10 seconds" requirement.`
   }
 
   return message

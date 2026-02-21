@@ -70,7 +70,7 @@ describe('generateGenrePrompt', () => {
     expect(body.messages[1].content).toContain('450')
   })
 
-  it('enforces 450 character limit on ElevenLabs prompt', async () => {
+  it('enforces 450 character limit and vocal timing on ElevenLabs prompt', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ choices: [{ message: { content: 'Jazz prompt here' } }] }),
@@ -85,6 +85,9 @@ describe('generateGenrePrompt', () => {
     expect(body.messages[1].content).toContain('MAXIMUM 450 CHARACTERS')
     expect(body.messages[1].content).toContain('450')
     expect(body.messages[0].content).toContain('450 characters or less')
+    // Verify vocal timing requirement
+    expect(body.messages[1].content).toContain('vocals start within 10 seconds')
+    expect(body.messages[1].content).toContain('~30s')
   })
 
   it('handles empty lyrics gracefully', async () => {
