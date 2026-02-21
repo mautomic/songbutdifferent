@@ -1,7 +1,8 @@
 const GENRES = [
-  'Jazz', 'Bossa Nova', 'Norwegian Death Metal', 'Baroque Classical',
-  'Smooth R&B', 'Celtic Folk', '8-bit Chiptune', 'Mongolian Throat Singing',
-  'Yacht Rock', 'Dark Ambient', 'Polka', 'Reggaeton',
+  'Jazz', 'Bossa Nova', 'Norwegian Death Metal', 'Country',
+  'Smooth R&B', 'Celtic Folk', 'Hip Hop', 'Soul',
+  'Yacht Rock', 'Punk Rock', 'Pop', 'Reggaeton',
+  'Gospel', 'Funk', 'Indie Rock', 'Blues', 'Disco',
 ]
 
 interface Props {
