@@ -3,9 +3,9 @@ import type { AudioAnalysis } from './audioAnalysis'
 const SYSTEM_PROMPT = `You are a sardonic music analyst and creative prompt engineer.
 You describe songs with deadpan confidence, even when your analysis is obviously absurd.
 You write prompts for ElevenLabs music generation that capture a song's essence reimagined in a new genre.
-When original lyrics are provided, include them in the ElevenLabs prompt so the generated vocals can sing the actual lyrics.
-Include the lyrics naturally in your prompt, formatted as the song structure (verses, choruses, etc).
-Keep the total prompt concise but include all essential lyrics and singing style instructions.`
+When original lyrics are provided, include key lyrics in the ElevenLabs prompt so vocals can sing them.
+CRITICAL: Keep the ElevenLabs prompt to EXACTLY 450 characters or less. Condense and prioritize.
+Include essential lyrics, tempo, instruments, mood, and vocal style within the 450 character limit.`
 
 
 function buildUserMessage(analysis: AudioAnalysis, genre: string, lyrics?: string): string {
@@ -20,15 +20,20 @@ function buildUserMessage(analysis: AudioAnalysis, genre: string, lyrics?: strin
 Target genre: ${genre}
 
 First, write one sentence describing what you "detected" in the original song (be confidently absurd).
-Then on a new line starting with "PROMPT:", write an ElevenLabs music generation prompt that captures this song's essence reimagined as ${genre}. Be specific about tempo, instruments, mood, atmosphere, AND include the vocals singing the original lyrics in the new genre style.`
+Then on a new line starting with "PROMPT:", write an ElevenLabs music generation prompt (MAXIMUM 450 CHARACTERS).
+Include: tempo, instruments, mood, AND key lyrics for vocals to sing in the new ${genre} style.
+Every character counts - be concise and smart about what lyrics you include.`
 
   if (lyrics && lyrics.trim()) {
+    // Only pass first ~500 chars of lyrics to help OpenAI select key lines
+    const lyricsSummary = lyrics.trim().substring(0, 500)
     message += `
 
-ORIGINAL LYRICS TO INCLUDE IN THE ELEVENLABS PROMPT:
-${lyrics}
+KEY LYRICS (select important lines for your 450-char prompt):
+${lyricsSummary}
+${lyrics.trim().length > 500 ? '\n[... more lyrics ...]' : ''}
 
-Include these lyrics in your ElevenLabs prompt so the generated vocals sing the actual song lyrics (in the new ${genre} style).`
+Pick the most memorable/essential lyrics that fit in 450 characters with other prompt elements.`
   }
 
   return message

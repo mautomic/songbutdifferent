@@ -65,12 +65,12 @@ describe('generateGenrePrompt', () => {
 
     const callArgs = vi.mocked(fetch).mock.calls[0]
     const body = JSON.parse(callArgs[1]?.body as string)
-    expect(body.messages[1].content).toContain('ORIGINAL LYRICS TO INCLUDE IN THE ELEVENLABS PROMPT')
+    expect(body.messages[1].content).toContain('KEY LYRICS')
     expect(body.messages[1].content).toContain('These are my lyrics')
-    expect(body.messages[1].content).toContain('sing the actual song lyrics')
+    expect(body.messages[1].content).toContain('450')
   })
 
-  it('passes full lyrics to OpenAI for ElevenLabs inclusion', async () => {
+  it('enforces 450 character limit on ElevenLabs prompt', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ choices: [{ message: { content: 'Jazz prompt here' } }] }),
@@ -81,9 +81,10 @@ describe('generateGenrePrompt', () => {
 
     const callArgs = vi.mocked(fetch).mock.calls[0]
     const body = JSON.parse(callArgs[1]?.body as string)
-    // Verify full lyrics are included
-    expect(body.messages[1].content).toContain(testLyrics)
-    expect(body.messages[1].content).toContain('sing the actual song lyrics')
+    // Verify character limit is mentioned
+    expect(body.messages[1].content).toContain('MAXIMUM 450 CHARACTERS')
+    expect(body.messages[1].content).toContain('450')
+    expect(body.messages[0].content).toContain('450 characters or less')
   })
 
   it('handles empty lyrics gracefully', async () => {
