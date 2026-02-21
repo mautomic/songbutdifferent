@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react'
-import { ApiKeySettings } from './components/ApiKeySettings'
 import { AudioUpload } from './components/AudioUpload'
 import { GenreSelector } from './components/GenreSelector'
 import { ResultsDisplay } from './components/ResultsDisplay'
@@ -40,11 +39,6 @@ export default function App() {
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  function saveKeys(newKeys: Keys) {
-    setKeys(newKeys)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newKeys))
-  }
-
   const handleFile = useCallback((file: File) => {
     setAudioFile(file)
     setPhase('idle')
@@ -56,7 +50,7 @@ export default function App() {
   async function handleTransform() {
     if (!audioFile || !genre) return
     if (!keys.claudeKey || !keys.elevenLabsKey) {
-      setError('Please enter both API keys before transforming.')
+      setError('API keys not configured. Set VITE_CLAUDE_API_KEY and VITE_ELEVENLABS_API_KEY in your .env file.')
       return
     }
 
@@ -106,12 +100,6 @@ export default function App() {
           <h1 className="text-3xl font-bold text-white">Song But Different</h1>
           <p className="text-gray-400 mt-1">Upload a song. Get it back as something else. Probably worse.</p>
         </header>
-
-        <ApiKeySettings
-          onSave={saveKeys}
-          initialClaudeKey={keys.claudeKey}
-          initialElevenLabsKey={keys.elevenLabsKey}
-        />
 
         <AudioUpload onFile={handleFile} />
 
