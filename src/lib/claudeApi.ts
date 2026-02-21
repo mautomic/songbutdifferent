@@ -3,11 +3,12 @@ import type { AudioAnalysis } from './audioAnalysis'
 const SYSTEM_PROMPT = `You are a sardonic music analyst and creative prompt engineer.
 You describe songs with deadpan confidence, even when your analysis is obviously absurd.
 You write prompts for ElevenLabs music generation that capture a song's essence reimagined in a new genre.
+When original lyrics are provided, consider rewriting or referencing them in the context of the new genre where appropriate.
 Keep prompts under 300 characters: specific, evocative, instrument-forward.`
 
-function buildUserMessage(analysis: AudioAnalysis, genre: string): string {
+function buildUserMessage(analysis: AudioAnalysis, genre: string, lyrics?: string): string {
   const { bpm, key, energy, timbre, durationSeconds } = analysis
-  return `Audio analysis of an uploaded song:
+  let message = `Audio analysis of an uploaded song:
 - BPM: ${bpm}
 - Key: ${key.note} ${key.scale}
 - Energy: ${energy}
@@ -18,12 +19,23 @@ Target genre: ${genre}
 
 First, write one sentence describing what you "detected" in the original song (be confidently absurd).
 Then on a new line starting with "PROMPT:", write an ElevenLabs music generation prompt that captures this song's essence reimagined as ${genre}. Be specific about tempo, instruments, mood, and atmosphere.`
+
+  if (lyrics && lyrics.trim()) {
+    const lyricsExcerpt = lyrics.trim().substring(0, 500)
+    message += `
+
+Original lyrics (excerpt):
+${lyricsExcerpt}`
+  }
+
+  return message
 }
 
 export async function generateGenrePrompt(
   analysis: AudioAnalysis,
   genre: string,
-  apiKey: string
+  apiKey: string,
+  lyrics?: string
 ): Promise<string> {
   const response = await fetch('http://localhost:3001/api/openai', {
     method: 'POST',
@@ -35,7 +47,7 @@ export async function generateGenrePrompt(
       max_tokens: 512,
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: buildUserMessage(analysis, genre) },
+        { role: 'user', content: buildUserMessage(analysis, genre, lyrics) },
       ],
       apiKey,
     }),

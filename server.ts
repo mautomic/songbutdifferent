@@ -69,6 +69,31 @@ app.post('/api/elevenlabs', async (req, res) => {
   }
 })
 
+// Lyrics API proxy
+app.get('/api/lyrics', async (req, res) => {
+  try {
+    const { artist, title } = req.query
+
+    if (!artist || !title) {
+      return res.json({ lyrics: '' })
+    }
+
+    const encodedArtist = encodeURIComponent(artist as string)
+    const encodedTitle = encodeURIComponent(title as string)
+
+    const response = await fetch(`https://api.lyrics.ovh/v1/${encodedArtist}/${encodedTitle}`)
+
+    if (!response.ok) {
+      return res.json({ lyrics: '' })
+    }
+
+    const data = await response.json()
+    res.json({ lyrics: data.lyrics || '' })
+  } catch (error) {
+    res.json({ lyrics: '' })
+  }
+})
+
 app.listen(PORT, () => {
   console.log(`Backend proxy running on http://localhost:${PORT}`)
 })

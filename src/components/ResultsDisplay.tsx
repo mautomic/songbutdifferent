@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { AudioAnalysis } from '../lib/audioAnalysis'
 
 interface Props {
@@ -5,9 +6,12 @@ interface Props {
   detection: string
   elevenLabsPrompt: string
   audioUrl: string | null
+  lyrics?: string
 }
 
-export function ResultsDisplay({ analysis, detection, elevenLabsPrompt, audioUrl }: Props) {
+export function ResultsDisplay({ analysis, detection, elevenLabsPrompt, audioUrl, lyrics }: Props) {
+  const [lyricsExpanded, setLyricsExpanded] = useState(false)
+
   return (
     <div className="space-y-4">
       <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
@@ -31,6 +35,24 @@ export function ResultsDisplay({ analysis, detection, elevenLabsPrompt, audioUrl
           <h3 className="text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-3">The Result</h3>
           {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
           <audio controls src={audioUrl} className="w-full" />
+        </div>
+      )}
+
+      {lyrics && lyrics.trim() && (
+        <div className="bg-gray-900 border border-green-700 rounded-lg p-4">
+          <button
+            onClick={() => setLyricsExpanded(!lyricsExpanded)}
+            className="w-full flex items-center justify-between hover:opacity-80 transition-opacity"
+            aria-expanded={lyricsExpanded}
+          >
+            <h3 className="text-xs font-semibold text-green-400 uppercase tracking-wider">Lyrics</h3>
+            <span className="text-green-400">{lyricsExpanded ? '▼' : '▶'}</span>
+          </button>
+          {lyricsExpanded && (
+            <div className="mt-3 max-h-64 overflow-y-auto">
+              <p className="text-gray-300 whitespace-pre-wrap text-sm">{lyrics}</p>
+            </div>
+          )}
         </div>
       )}
     </div>

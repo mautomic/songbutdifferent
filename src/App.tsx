@@ -1,9 +1,11 @@
 import { useState, useCallback } from 'react'
 import { AudioUpload } from './components/AudioUpload'
+import { SongInfo } from './components/SongInfo'
 import { GenreSelector } from './components/GenreSelector'
 import { ResultsDisplay } from './components/ResultsDisplay'
 import { analyzeAudioBuffer, type AudioAnalysis } from './lib/audioAnalysis'
 import { generateGenrePrompt, parseClaudeResponse } from './lib/claudeApi'
+import { fetchLyrics } from './lib/lyricsApi'
 import { generateMusic, blobToObjectUrl } from './lib/elevenLabsApi'
 
 type Phase = 'idle' | 'analyzing' | 'generating-prompt' | 'generating-music' | 'done' | 'error'
@@ -31,11 +33,13 @@ function loadKeys(): Keys {
 export default function App() {
   const [keys, setKeys] = useState<Keys>(loadKeys)
   const [audioFile, setAudioFile] = useState<File | null>(null)
+  const [songInfo, setSongInfo] = useState({ artist: '', title: '' })
   const [genre, setGenre] = useState<string | null>(null)
   const [phase, setPhase] = useState<Phase>('idle')
   const [analysis, setAnalysis] = useState<AudioAnalysis | null>(null)
   const [detection, setDetection] = useState('')
   const [elevenLabsPrompt, setElevenLabsPrompt] = useState('')
+  const [lyrics, setLyrics] = useState<string>('')
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -45,6 +49,10 @@ export default function App() {
     setAnalysis(null)
     setAudioUrl(null)
     setError(null)
+  }, [])
+
+  const handleSongInfoUpdate = useCallback((info: { artist: string; title: string }) => {
+    setSongInfo(info)
   }, [])
 
   async function handleTransform() {
@@ -63,9 +71,19 @@ export default function App() {
       const result = await analyzeAudioBuffer(audioBuffer)
       setAnalysis(result)
 
+      // Step 1.5: Fetch lyrics (non-blocking)
+      let fetchedLyrics = ''
+      try {
+        fetchedLyrics = await fetchLyrics(songInfo.artist, songInfo.title)
+        setLyrics(fetchedLyrics)
+      } catch (err) {
+        console.warn('Failed to fetch lyrics, continuing without them:', err)
+        setLyrics('')
+      }
+
       // Step 2: Generate prompt via OpenAI
       setPhase('generating-prompt')
-      const rawResponse = await generateGenrePrompt(result, genre, keys.openaiKey)
+      const rawResponse = await generateGenrePrompt(result, genre, keys.openaiKey, fetchedLyrics)
       const { detection: det, elevenLabsPrompt: prompt } = parseClaudeResponse(rawResponse)
       setDetection(det)
       setElevenLabsPrompt(prompt)
@@ -103,6 +121,8 @@ export default function App() {
 
         <AudioUpload onFile={handleFile} />
 
+        <SongInfo artist={songInfo.artist} title={songInfo.title} onUpdate={handleSongInfoUpdate} />
+
         <GenreSelector selected={genre} onSelect={setGenre} />
 
         <button
@@ -129,6 +149,7 @@ export default function App() {
             detection={detection}
             elevenLabsPrompt={elevenLabsPrompt}
             audioUrl={audioUrl}
+            lyrics={lyrics}
           />
         )}
       </div>
