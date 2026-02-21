@@ -66,7 +66,8 @@ describe('generateGenrePrompt', () => {
 
     const callArgs = vi.mocked(fetch).mock.calls[0]
     const body = JSON.parse(callArgs[1]?.body as string)
-    expect(body.messages[1].content).toContain('Original lyrics (excerpt - proportional to')
+    expect(body.messages[1].content).toContain('Original lyrics context for instrumental style')
+    expect(body.messages[1].content).toContain('Lyrics for vocals (use these in the ElevenLabs prompt so they get sung)')
     expect(body.messages[1].content).toContain('aaa') // At least some lyrics present
   })
 
@@ -81,11 +82,29 @@ describe('generateGenrePrompt', () => {
 
     const callArgs = vi.mocked(fetch).mock.calls[0]
     const body = JSON.parse(callArgs[1]?.body as string)
-    const lyricsSection = body.messages[1].content.split('Original lyrics (excerpt - proportional to')[1]
-    const lyricsContent = lyricsSection?.trim()
+    const contextSection = body.messages[1].content.split('Original lyrics context for instrumental style')[1]
+    const contextContent = contextSection?.split('Lyrics for vocals')[0]?.trim()
     // Should be roughly 27% of 1000 = ~270 chars (allow 50 char variance for line break handling)
-    expect(lyricsContent?.length).toBeGreaterThan(220)
-    expect(lyricsContent?.length).toBeLessThan(320)
+    expect(contextContent?.length).toBeGreaterThan(220)
+    expect(contextContent?.length).toBeLessThan(320)
+  })
+
+  it('extracts larger vocal lyrics (~55% for vocals to sing)', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ choices: [{ message: { content: 'Jazz prompt here' } }] }),
+    } as Response)
+
+    const longLyrics = 'a'.repeat(1000)
+    await generateGenrePrompt(mockAnalysis, 'Jazz', 'test-api-key', longLyrics)
+
+    const callArgs = vi.mocked(fetch).mock.calls[0]
+    const body = JSON.parse(callArgs[1]?.body as string)
+    const vocalSection = body.messages[1].content.split('Lyrics for vocals (use these in the ElevenLabs prompt so they get sung):')[1]
+    const vocalContent = vocalSection?.trim()
+    // Should be roughly 55% of 1000 = ~550 chars (allow 100 char variance for line break handling)
+    expect(vocalContent?.length).toBeGreaterThan(450)
+    expect(vocalContent?.length).toBeLessThan(650)
   })
 
   it('includes duration context in lyrics label', async () => {
@@ -94,7 +113,8 @@ describe('generateGenrePrompt', () => {
       json: async () => ({ choices: [{ message: { content: 'Jazz prompt here' } }] }),
     } as Response)
 
-    const testLyrics = 'These are my lyrics'
+    // Use longer lyrics so vocal section appears
+    const testLyrics = 'a'.repeat(200)
     await generateGenrePrompt(mockAnalysis, 'Jazz', 'test-api-key', testLyrics)
 
     const callArgs = vi.mocked(fetch).mock.calls[0]
