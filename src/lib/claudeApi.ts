@@ -6,6 +6,25 @@ You write prompts for ElevenLabs music generation that capture a song's essence 
 When original lyrics are provided, consider rewriting or referencing them in the context of the new genre where appropriate.
 Keep prompts under 300 characters: specific, evocative, instrument-forward.`
 
+// Extract a proportional amount of lyrics for the shortened song (~25-30% for 1/4 length)
+function getProportionalLyricsExcerpt(lyrics: string): string {
+  const trimmed = lyrics.trim()
+  if (!trimmed) return ''
+
+  // Use roughly 25-30% of the original lyrics for the 1/4 length song
+  // Calculate based on character count to preserve natural line breaks
+  const targetLength = Math.ceil(trimmed.length * 0.27)
+  let excerpt = trimmed.substring(0, targetLength)
+
+  // Try to end at a line break for cleaner output
+  const lastNewline = excerpt.lastIndexOf('\n')
+  if (lastNewline > targetLength * 0.8) {
+    excerpt = excerpt.substring(0, lastNewline)
+  }
+
+  return excerpt
+}
+
 function buildUserMessage(analysis: AudioAnalysis, genre: string, lyrics?: string): string {
   const { bpm, key, energy, timbre, durationSeconds } = analysis
   let message = `Audio analysis of an uploaded song:
@@ -21,10 +40,10 @@ First, write one sentence describing what you "detected" in the original song (b
 Then on a new line starting with "PROMPT:", write an ElevenLabs music generation prompt that captures this song's essence reimagined as ${genre}. Be specific about tempo, instruments, mood, and atmosphere.`
 
   if (lyrics && lyrics.trim()) {
-    const lyricsExcerpt = lyrics.trim().substring(0, 500)
+    const lyricsExcerpt = getProportionalLyricsExcerpt(lyrics)
     message += `
 
-Original lyrics (excerpt):
+Original lyrics (excerpt - proportional to ${Math.round(durationSeconds / 4)}s generated song):
 ${lyricsExcerpt}`
   }
 
